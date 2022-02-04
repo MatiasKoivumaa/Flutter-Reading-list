@@ -1,1 +1,1 @@
-# flutter_app
+# Reading list app made with flutter.
