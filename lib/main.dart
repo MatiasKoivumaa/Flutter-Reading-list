@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
 import './books.dart';
+import './favorites.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(const MyApp());
 
 class MyApp extends StatefulWidget {
+  const MyApp({Key key}) : super(key: key);
   @override
   State<StatefulWidget> createState() {
     return _MyAppState();
@@ -15,18 +17,48 @@ class Book {
   int id;
   String name;
   Image image;
+  bool addedToList = false;
+  Icon icon = const Icon(
+    Icons.favorite_outline,
+    color: Colors.white,
+    size: 30,
+  );
 
   Book(this.id, this.name, this.image);
+
+  void favorite() {
+    icon = const Icon(
+      Icons.favorite,
+      color: Colors.red,
+      size: 30,
+    );
+  }
+
+  void unFavorite() {
+    icon = const Icon(
+      Icons.favorite_outline,
+      color: Colors.white,
+      size: 30,
+    );
+  }
 }
 
 class _MyAppState extends State<MyApp> {
-  final TextEditingController _filter = new TextEditingController();
-
+  final _filter = TextEditingController();
   final _allBooks = <Book>[];
   var _foundBooks = <Book>[];
+  final _favoritedBooks = <Book>[];
   var _searchWord = "";
-  Icon _searchIcon = new Icon(Icons.search);
-  Widget _appBarTitle = new Text("Reading list");
+  Icon _searchIcon = const Icon(
+    Icons.search,
+    size: 32,
+  );
+  Icon _favoritesIcon = const Icon(
+    Icons.favorite_outline,
+    size: 32,
+  );
+  Widget _appBarTitle = const Text("Reading list");
+  bool _favorites = false;
 
   static const _books = [
     {
@@ -104,7 +136,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   @override
-    void dispose() {
+  void dispose() {
     _filter.dispose();
     super.dispose();
   }
@@ -113,17 +145,18 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: _buildBar(context),
-        body: Container(
-          child: _buildList(),
-        ),
-      ),
+          appBar: _buildBar(context),
+          body: !_favorites
+              ? Container(
+                  child: _buildList(),
+                )
+              : Favorites(_favoritedBooks, _addToFavorites)),
     );
   }
 
   Widget _buildList() {
     if (_searchWord.isNotEmpty) {
-      List tempList = new List<Book>();
+      var tempList = <Book>[];
       for (int i = 0; i < _allBooks.length; i++) {
         if (_allBooks[i]
             .name
@@ -134,7 +167,7 @@ class _MyAppState extends State<MyApp> {
       }
       _foundBooks = tempList;
     }
-    return Books(_foundBooks);
+    return Books(_foundBooks, _addToFavorites);
   }
 
   Widget _buildBar(BuildContext context) {
@@ -145,6 +178,15 @@ class _MyAppState extends State<MyApp> {
         icon: _searchIcon,
         onPressed: _searchPressed,
       ),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 20),
+          child: IconButton(
+            icon: _favoritesIcon,
+            onPressed: _favoritesPressed,
+          ),
+        )
+      ],
     );
   }
 
@@ -160,11 +202,45 @@ class _MyAppState extends State<MyApp> {
           ),
         );
       } else {
-        _searchIcon = Icon(Icons.search);
-        _appBarTitle = Text("Reading list");
+        _searchIcon = const Icon(Icons.search);
+        _appBarTitle = const Text("Reading list");
         _foundBooks = _allBooks;
         _filter.clear();
       }
     });
+  }
+
+  void _favoritesPressed() {
+    if (!_favorites) {
+      setState(() {
+        _favorites = true;
+        _favoritesIcon = const Icon(
+          Icons.home_outlined,
+          size: 32,
+        );
+      });
+    } else {
+      setState(() {
+        _favorites = false;
+        _favoritesIcon = const Icon(
+          Icons.favorite_outline,
+          size: 32,
+        );
+      });
+    }
+  }
+
+  void _addToFavorites(Book book) {
+    if (book.addedToList) {
+      setState(() {
+        book.favorite();
+        _favoritedBooks.add(book);
+      });
+    } else {
+      setState(() {
+        book.unFavorite();
+        _favoritedBooks.remove(book);
+      });
+    }
   }
 }

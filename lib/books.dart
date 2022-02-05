@@ -1,36 +1,67 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_app/main.dart';
 
 class Books extends StatelessWidget {
   final List<Book> books;
+  final Function changeIcon;
 
-  Books(this.books);
+  const Books(this.books, this.changeIcon, {Key key}) : super(key: key);
 
   List<Image> get image {
     var images = <Image>[];
-    for (int i=0; i<books.length; i++) {
+    for (int i = 0; i < books.length; i++) {
       images.add(books[i].image);
     }
     return images;
   }
 
-  /*List<Text> get name {
-    var names = <Text>[];
-    for (int i = 0; i < books.length; i++) {
-      names.add(Text(
-        books[i].name,
-        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-      ));
+  void checkPressed(Book book) {
+    if (book.addedToList) {
+      book.addedToList = false;
+    } else {
+      book.addedToList = true;
     }
-    return names;
-  }*/
+    changeIcon(book);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return GridView.count(
-        crossAxisCount: 2,
-        mainAxisSpacing: 20,
-        children: image,
+    return GridView.builder(
+      padding: const EdgeInsets.all(10),
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: 200,
+          childAspectRatio: 2 / 3,
+          crossAxisSpacing: 20,
+          mainAxisSpacing: 20),
+      itemCount: books.length,
+      itemBuilder: (BuildContext context, index) {
+        return GridTile(
+            key: ValueKey(books[index].id),
+            child: image[index],
+            footer: GridTileBar(
+              backgroundColor: Colors.black45,
+              title: books[index].addedToList
+                  ? const Text(
+                      "Remove",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                  : const Text(
+                      "Add to list",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+              trailing: IconButton(
+                onPressed: () => checkPressed(books[index]),
+                icon: books[index].icon,
+              ),
+            ));
+      },
     );
   }
 }
