@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 import './favorites.dart';
 import './books.dart';
+import './book_model.dart';
 
 void main() => runApp(const MyApp());
 
@@ -13,41 +16,11 @@ class MyApp extends StatefulWidget {
   }
 }
 
-class Book {
-  int id;
-  String name;
-  Image image;
-  bool addedToList = false;
-  Icon icon = const Icon(
-    Icons.favorite_outline,
-    color: Colors.white,
-    size: 30,
-  );
-
-  Book(this.id, this.name, this.image);
-
-  void favorite() {
-    icon = const Icon(
-      Icons.favorite,
-      color: Colors.red,
-      size: 30,
-    );
-  }
-
-  void unFavorite() {
-    icon = const Icon(
-      Icons.favorite_outline,
-      color: Colors.white,
-      size: 30,
-    );
-  }
-}
-
 class _MyAppState extends State<MyApp> {
+  Future<List<BookItem>> futureBook;
   final _filter = TextEditingController();
-  final _allBooks = <Book>[];
-  var _foundBooks = <Book>[];
-  final _favoritedBooks = <Book>[];
+  var _foundBooks = <BookItem>[];
+  final _favoritedBooks = <BookItem>[];
   var _searchWord = "";
   Icon _searchIcon = const Icon(
     Icons.search,
@@ -60,63 +33,11 @@ class _MyAppState extends State<MyApp> {
   Widget _appBarTitle = const Text("Reading list");
   bool _favorites = false;
 
-  static const _books = [
-    {
-      "image": Image(
-        image: AssetImage("graphics/BillySummers.jpg"),
-      ),
-      "name": "Stephen King Billy Summers",
-    },
-    {
-      "image": Image(
-        image: AssetImage("graphics/KuolemaJoulupaivana.jpg"),
-      ),
-      "name": "P.D.James Kuolema joulupäivänä",
-    },
-    {
-      "image": Image(
-        image: AssetImage("graphics/LevotonVeri.jpg"),
-      ),
-      "name": "Robert Galbraith Levoton veri",
-    },
-    {
-      "image": Image(
-        image: AssetImage("graphics/LohikaarmeenIsku.jpg"),
-      ),
-      "name": "Ilkka Remes Lohikäärmeen isku",
-    },
-    {
-      "image": Image(
-        image: AssetImage("graphics/Mentalisti.jpg"),
-      ),
-      "name": "Camilla Läckberg Henrik Fexeus Mentalisti",
-    },
-    {
-      "image": Image(
-        image: AssetImage("graphics/Merilokki.jpg"),
-      ),
-      "name": "Ann Cleeves Merilokki",
-    },
-    {
-      "image": Image(
-        image: AssetImage("graphics/MuukalaisenPaivakirjat.jpg"),
-      ),
-      "name": "Elly Griffiths Muukalaisen päiväkirjat",
-    },
-    {
-      "image": Image(
-        image: AssetImage("graphics/Napapiiri.jpg"),
-      ),
-      "name": "Liza Marklund Napapiiri",
-    }
-  ];
-
   _MyAppState() {
     _filter.addListener(() {
       if (_filter.text.isEmpty) {
         setState(() {
           _searchWord = "";
-          _foundBooks = _allBooks;
         });
       } else {
         setState(() {
@@ -128,17 +49,21 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void initState() {
-    for (int i = 0; i < _books.length; i++) {
-      _allBooks.add(Book(i, _books[i]["name"], _books[i]["image"]));
-      _foundBooks.add(Book(i, _books[i]["name"], _books[i]["image"]));
-    }
     super.initState();
+    futureBook = fetchBooks();
   }
 
-  @override
-  void dispose() {
-    _filter.dispose();
-    super.dispose();
+  Future<List<BookItem>> fetchBooks() async {
+    final res = await http.get(Uri.parse(
+        "https://www.googleapis.com/books/v1/volumes?q=Harry Potter&maxResults=2"));
+    if (res.statusCode == 200) {
+      String jsonStr = res.body;
+      final jsonRes = json.decode(jsonStr);
+      print(jsonRes["items"][0]["volumeInfo"]["imageLinks"]);
+      return jsonRes["items"].map((bookItem) => BookItem.fromJson(bookItem)).toList();
+    } else {
+      throw Exception("Unexpected error occurred.");
+    }
   }
 
   @override
@@ -146,28 +71,21 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
           appBar: _buildBar(context),
-          body: !_favorites
-              ? Container(
-                  child: _buildList(),
-                )
-              : Favorites(_favoritedBooks, _addToFavorites)),
+          body: FutureBuilder<List<BookItem>>(
+            future: futureBook,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                List<BookItem> books = snapshot.data;
+                return !_favorites
+                    ? Books(books, _addToFavorites)
+                    : Favorites(_favoritedBooks, _addToFavorites);
+              } else if (snapshot.hasError) {
+                return Text("${snapshot.error}");
+              }
+              return const CircularProgressIndicator();
+            },
+          )),
     );
-  }
-
-  Widget _buildList() {
-    if (_searchWord.isNotEmpty) {
-      var tempList = <Book>[];
-      for (int i = 0; i < _allBooks.length; i++) {
-        if (_allBooks[i]
-            .name
-            .toLowerCase()
-            .contains(_searchWord.toLowerCase())) {
-          tempList.add(_allBooks[i]);
-        }
-      }
-      _foundBooks = tempList;
-    }
-    return Books(_foundBooks, _addToFavorites);
   }
 
   Widget _buildBar(BuildContext context) {
@@ -204,7 +122,7 @@ class _MyAppState extends State<MyApp> {
       } else {
         _searchIcon = const Icon(Icons.search);
         _appBarTitle = const Text("Reading list");
-        _foundBooks = _allBooks;
+        //_foundBooks = _allBooks;
         _filter.clear();
       }
     });
@@ -230,7 +148,7 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  void _addToFavorites(Book book) {
+  void _addToFavorites(BookItem book) {
     if (book.addedToList) {
       setState(() {
         book.favorite();

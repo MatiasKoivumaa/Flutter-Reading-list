@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/book_model.dart';
 
 import 'package:flutter_app/main.dart';
 
 class Books extends StatelessWidget {
-  final List<Book> books;
+  final List<BookItem> books;
   final Function changeIcon;
 
   const Books(this.books, this.changeIcon, {Key key}) : super(key: key);
 
-  List<Image> get image {
+  /*List<Image> get image {
     var images = <Image>[];
     for (int i = 0; i < books.length; i++) {
-      images.add(books[i].image);
+      images.add(books[i].);
     }
     return images;
-  }
+  }*/
 
-  void checkPressed(Book book) {
+  void checkPressed(BookItem book) {
     if (book.addedToList) {
       book.addedToList = false;
     } else {
@@ -38,7 +39,7 @@ class Books extends StatelessWidget {
       itemBuilder: (BuildContext context, index) {
         return GridTile(
             key: ValueKey(books[index].id),
-            child: image[index],
+            child: Text("Placeholder"),
             footer: GridTileBar(
               backgroundColor: Colors.black45,
               title: books[index].addedToList

@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/book_model.dart';
 
 import 'package:flutter_app/main.dart';
 
 class Favorites extends StatelessWidget {
-  final List<Book> favoriteBooks;
+  final List<BookItem> favoriteBooks;
   final Function changeIcon;
 
   const Favorites(this.favoriteBooks, this.changeIcon, {Key key})
       : super(key: key);
 
-  List<Image> get image {
+  /*List<Image> get image {
     var images = <Image>[];
     for (int i = 0; i < favoriteBooks.length; i++) {
       images.add(favoriteBooks[i].image);
     }
     return images;
-  }
+  }*/
 
-  void checkPressed(Book book) {
+  void checkPressed(BookItem book) {
     if (book.addedToList) {
       book.addedToList = false;
     } else {
@@ -40,7 +41,7 @@ class Favorites extends StatelessWidget {
             itemBuilder: (BuildContext context, index) {
               return GridTile(
                   key: ValueKey(favoriteBooks[index].id),
-                  child: image[index],
+                  child: Text("Placeholder"),
                   footer: GridTileBar(
                     backgroundColor: Colors.black45,
                     title: favoriteBooks[index].addedToList
