@@ -39,7 +39,7 @@ class Books extends StatelessWidget {
       itemBuilder: (BuildContext context, index) {
         return GridTile(
             key: ValueKey(books[index].id),
-            child: Text("Placeholder"),
+            child: const Image(image: AssetImage("graphics/image_missing.png"),),
             footer: GridTileBar(
               backgroundColor: Colors.black45,
               title: books[index].addedToList

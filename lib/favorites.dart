@@ -41,7 +41,7 @@ class Favorites extends StatelessWidget {
             itemBuilder: (BuildContext context, index) {
               return GridTile(
                   key: ValueKey(favoriteBooks[index].id),
-                  child: Text("Placeholder"),
+                  child: Text(favoriteBooks[index].title),
                   footer: GridTileBar(
                     backgroundColor: Colors.black45,
                     title: favoriteBooks[index].addedToList
