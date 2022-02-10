@@ -55,11 +55,14 @@ class _MyAppState extends State<MyApp> {
 
   Future<List<BookItem>> fetchBooks() async {
     final res = await http.get(Uri.parse(
-        "https://www.googleapis.com/books/v1/volumes?q=gameofthrones&maxResults=2"));
+        "https://openlibrary.org/search.json?q=tuntematon+sotilas&limit=10"));
     if (res.statusCode == 200) {
       final jsonRes = json.decode(res.body);
-      print(jsonRes["items"][0]["volumeInfo"]["imageLinks"]["thumbnail"]);
-      List<BookItem> books = (jsonRes["items"] as List).map((data) => BookItem.fromJson(data)).toList();
+
+      List<BookItem> books = (jsonRes["items"] as List).map((data) =>
+          data["volumeInfo"]["imageLinks"] != null
+              ? BookItem.fromJson(data)
+              : BookItem.imageLinkFromJson(data)).toList();
       return books;
     } else {
       throw Exception("Unexpected error occurred.");
