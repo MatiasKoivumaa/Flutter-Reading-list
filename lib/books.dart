@@ -1,21 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/book_model.dart';
 
-import 'package:flutter_app/main.dart';
-
 class Books extends StatelessWidget {
   final List<BookItem> books;
   final Function changeIcon;
 
   const Books(this.books, this.changeIcon, {Key key}) : super(key: key);
-
-  /*List<Image> get image {
-    var images = <Image>[];
-    for (int i = 0; i < books.length; i++) {
-      images.add(books[i].);
-    }
-    return images;
-  }*/
 
   void checkPressed(BookItem book) {
     if (book.addedToList) {
@@ -28,48 +18,69 @@ class Books extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      padding: const EdgeInsets.all(10),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-          maxCrossAxisExtent: 200,
-          childAspectRatio: 2 / 3,
-          crossAxisSpacing: 20,
-          mainAxisSpacing: 20),
-      itemCount: books.length,
-      itemBuilder: (BuildContext context, index) {
-        return GridTile(
-            key: ValueKey(books[index].id),
-            child: books[index].imageLink != ""
-                ? Image.network(
-                    books[index].imageLink,
-                    fit: BoxFit.fill,
-                  )
-                : const Image(
-                    image: AssetImage("graphics/image_missing.png"),
+    return ListView.builder(
+        itemCount: books.length,
+        itemExtent: 150,
+        itemBuilder: (BuildContext context, index) {
+          return Card(
+              child: Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(10),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minWidth: MediaQuery.of(context).size.width * 0.23,
+                    maxWidth: MediaQuery.of(context).size.width * 0.23,
                   ),
-            footer: GridTileBar(
-              backgroundColor: Colors.black45,
-              title: books[index].addedToList
-                  ? const Text(
-                      "Remove",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    )
-                  : const Text(
-                      "Add to list",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                  child: books[index].imageLink != ""
+                      ? Image.network(
+                          books[index].imageLink,
+                          fit: BoxFit.fill,
+                        )
+                      : const Image(
+                          image: AssetImage("graphics/image_missing.png"),
+                        ),
+                ),
+              ),
+              Column(
+                children: [
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.5,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(5, 6, 0, 0),
+                      child: Text(
+                        books[index].title,
+                        style: const TextStyle(
+                          fontSize: 17,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 4,
                       ),
                     ),
-              trailing: IconButton(
-                onPressed: () => checkPressed(books[index]),
-                icon: books[index].icon,
+                  ),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.5,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(5, 10, 0, 0),
+                      child: Text(
+                        books[index].author,
+                        style: const TextStyle(
+                            fontSize: 14, color: Colors.black54),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ));
-      },
-    );
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.19,
+                child: IconButton(
+                  onPressed: () => checkPressed(books[index]),
+                  icon: books[index].icon,
+                ),
+              )
+            ],
+          ));
+        });
   }
 }
