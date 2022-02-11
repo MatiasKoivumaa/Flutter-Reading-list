@@ -1,22 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/book_model.dart';
 
-import 'package:flutter_app/main.dart';
-
 class Favorites extends StatelessWidget {
   final List<BookItem> favoriteBooks;
   final Function changeIcon;
 
   const Favorites(this.favoriteBooks, this.changeIcon, {Key key})
       : super(key: key);
-
-  /*List<Image> get image {
-    var images = <Image>[];
-    for (int i = 0; i < favoriteBooks.length; i++) {
-      images.add(favoriteBooks[i].image);
-    }
-    return images;
-  }*/
 
   void checkPressed(BookItem book) {
     if (book.addedToList) {
@@ -30,49 +20,70 @@ class Favorites extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return favoriteBooks.isNotEmpty
-        ? GridView.builder(
-            padding: const EdgeInsets.all(10),
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 200,
-                childAspectRatio: 2 / 3,
-                crossAxisSpacing: 20,
-                mainAxisSpacing: 20),
+        ? ListView.builder(
             itemCount: favoriteBooks.length,
+            itemExtent: 150,
             itemBuilder: (BuildContext context, index) {
-              return GridTile(
-                  key: ValueKey(favoriteBooks[index].id),
-                  child: favoriteBooks[index].imageLink != ""
-                      ? Image.network(
-                          favoriteBooks[index].imageLink,
-                          fit: BoxFit.fill,
-                        )
-                      : const Image(
-                          image: AssetImage("graphics/image_missing.png"),
-                        ),
-                  footer: GridTileBar(
-                    backgroundColor: Colors.black45,
-                    title: favoriteBooks[index].addedToList
-                        ? const Text(
-                            "Remove",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+              return Card(
+                  child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minWidth: MediaQuery.of(context).size.width * 0.23,
+                        maxWidth: MediaQuery.of(context).size.width * 0.23,
+                      ),
+                      child: favoriteBooks[index].imageLink != ""
+                          ? Image.network(
+                              favoriteBooks[index].imageLink,
+                              fit: BoxFit.fill,
+                            )
+                          : const Image(
+                              image: AssetImage("graphics/image_missing.png"),
                             ),
-                          )
-                        : const Text(
-                            "Add to list",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Column(
+                    children: [
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.5,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(5, 6, 0, 0),
+                          child: Text(
+                            favoriteBooks[index].title,
+                            style: const TextStyle(
+                              fontSize: 17,
                             ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 4,
                           ),
-                    trailing: IconButton(
+                        ),
+                      ),
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.5,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(5, 10, 0, 0),
+                          child: Text(
+                            favoriteBooks[index].author,
+                            style: const TextStyle(
+                                fontSize: 14, color: Colors.black54),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.19,
+                    child: IconButton(
                       onPressed: () => checkPressed(favoriteBooks[index]),
                       icon: favoriteBooks[index].icon,
                     ),
-                  ));
-            },
-          )
+                  )
+                ],
+              ));
+            })
         : const Center(
             heightFactor: 3,
             child: Text(

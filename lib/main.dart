@@ -55,7 +55,7 @@ class _MyAppState extends State<MyApp> {
 
   Future<List<BookItem>> fetchBooks() async {
     final res = await http.get(Uri.parse(
-        "https://www.googleapis.com/books/v1/volumes?q=harry+potter+and+inauthor:rowling&printType=books"));
+        "https://www.googleapis.com/books/v1/volumes?q=harry+potter+and+inauthor:rowling&printType=books&maxResults=15"));
     if (res.statusCode == 200) {
       final jsonRes = json.decode(res.body);
 
