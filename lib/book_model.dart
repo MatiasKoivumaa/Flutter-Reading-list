@@ -9,7 +9,7 @@ class BookItem {
   Icon icon = const Icon(
     Icons.favorite_outline,
     color: Colors.red,
-    size: 30,
+    size: 32,
   );
 
   BookItem({this.id, this.title, this.author, this.imageLink});
@@ -56,7 +56,7 @@ class BookItem {
     icon = const Icon(
       Icons.favorite,
       color: Colors.red,
-      size: 30,
+      size: 32,
     );
   }
 
@@ -64,7 +64,7 @@ class BookItem {
     icon = const Icon(
       Icons.favorite_outline,
       color: Colors.red,
-      size: 30,
+      size: 32,
     );
   }
 }
