@@ -21,10 +21,10 @@ class _MyAppState extends State<MyApp> {
   final _filter = TextEditingController();
   final _favoritedBooks = <BookItem>[];
   String _apiUrl =
-    'https://www.googleapis.com/books/v1/volumes?q=inauthor:stephen+king&printType=books&maxResults=15&langRestrict=en';
+      'https://www.googleapis.com/books/v1/volumes?q=inauthor:stephen+king&printType=books&maxResults=15&langRestrict=en';
   Icon _searchIcon = const Icon(
     Icons.search,
-    size: 32,
+    size: 33,
   );
   Icon _favoritesIcon = const Icon(
     Icons.favorite_outline,
@@ -76,6 +76,7 @@ class _MyAppState extends State<MyApp> {
       }
       if (books != null) {
         books.removeWhere((item) => item.title == "");
+        books.removeWhere((item) => item.author == "");
       }
       return books;
     } else {
@@ -87,6 +88,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
+          backgroundColor: Colors.deepPurple.shade50,
           appBar: _buildBar(context),
           body: FutureBuilder<List<BookItem>>(
             future: fetchBooks(),
@@ -118,6 +120,13 @@ class _MyAppState extends State<MyApp> {
   Widget _buildBar(BuildContext context) {
     return AppBar(
       centerTitle: true,
+      backgroundColor: Colors.deepPurple.shade400,
+      toolbarHeight: 70,
+      titleTextStyle: const TextStyle(
+        fontWeight: FontWeight.bold,
+        color: Colors.white,
+        fontSize: 22,
+      ),
       title: _appBarTitle,
       leading: IconButton(
         icon: _searchIcon,
@@ -138,16 +147,40 @@ class _MyAppState extends State<MyApp> {
   void _searchPressed() {
     setState(() {
       if (_searchIcon.icon == Icons.search) {
-        _searchIcon = const Icon(Icons.close);
+        _searchIcon = const Icon(
+          Icons.close,
+          size: 31,
+        );
         _appBarTitle = TextField(
           controller: _filter,
+            style: const TextStyle(color: Colors.white),
+          cursorColor: Colors.white,
           decoration: const InputDecoration(
-            prefixIcon: Icon(Icons.search),
-            hintText: "Search for books...",
+            prefixIcon: Icon(
+              Icons.search,
+              color: Colors.white,
+            ),
+            hintText: " Search for books...",
+            enabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(
+                color: Colors.white,
+                width: 1.5,
+              ),
+            ),
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(
+                color: Colors.white,
+                width: 1.5,
+              ),
+            ),
+            hintStyle: TextStyle(color: Colors.white),
           ),
         );
       } else {
-        _searchIcon = const Icon(Icons.search);
+        _searchIcon = const Icon(
+          Icons.search,
+          size: 33,
+        );
         _appBarTitle = const Text("Reading list");
         _filter.clear();
       }

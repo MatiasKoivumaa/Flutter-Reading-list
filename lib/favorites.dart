@@ -23,8 +23,10 @@ class Favorites extends StatelessWidget {
         ? ListView.builder(
             itemCount: favoriteBooks.length,
             itemExtent: 150,
+            padding: const EdgeInsets.all(7),
             itemBuilder: (BuildContext context, index) {
               return Card(
+                  elevation: 5,
                   child: Row(
                 children: [
                   Padding(
@@ -49,7 +51,7 @@ class Favorites extends StatelessWidget {
                       SizedBox(
                         width: MediaQuery.of(context).size.width * 0.5,
                         child: Padding(
-                          padding: const EdgeInsets.fromLTRB(5, 6, 0, 0),
+                          padding: const EdgeInsets.fromLTRB(4, 6, 0, 0),
                           child: Text(
                             favoriteBooks[index].title,
                             style: const TextStyle(
@@ -63,7 +65,7 @@ class Favorites extends StatelessWidget {
                       SizedBox(
                         width: MediaQuery.of(context).size.width * 0.5,
                         child: Padding(
-                          padding: const EdgeInsets.fromLTRB(5, 10, 0, 0),
+                          padding: const EdgeInsets.fromLTRB(4, 10, 0, 6),
                           child: Text(
                             favoriteBooks[index].author,
                             style: const TextStyle(
@@ -75,7 +77,7 @@ class Favorites extends StatelessWidget {
                     ],
                   ),
                   SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.19,
+                    width: MediaQuery.of(context).size.width * 0.15,
                     child: IconButton(
                       onPressed: () => checkPressed(favoriteBooks[index]),
                       icon: favoriteBooks[index].icon,
