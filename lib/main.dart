@@ -19,9 +19,9 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   Future<List<BookItem>> futureBook;
   final _filter = TextEditingController();
-  var _foundBooks = <BookItem>[];
   final _favoritedBooks = <BookItem>[];
-  var _searchWord = "";
+  String _apiUrl =
+    'https://www.googleapis.com/books/v1/volumes?q=inauthor:stephen+king&printType=books&maxResults=15&langRestrict=en';
   Icon _searchIcon = const Icon(
     Icons.search,
     size: 32,
@@ -37,11 +37,13 @@ class _MyAppState extends State<MyApp> {
     _filter.addListener(() {
       if (_filter.text.isEmpty) {
         setState(() {
-          _searchWord = "";
+          _apiUrl =
+              'https://www.googleapis.com/books/v1/volumes?q=inauthor:stephen+king&printType=books&maxResults=15&langRestrict=en';
         });
       } else {
         setState(() {
-          _searchWord = _filter.text;
+          _apiUrl =
+              'https://www.googleapis.com/books/v1/volumes?q="${_filter.text}"&printType=books&maxResults=15';
         });
       }
     });
@@ -50,20 +52,31 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    futureBook = fetchBooks();
   }
 
   Future<List<BookItem>> fetchBooks() async {
-    final res = await http.get(Uri.parse(
-        "https://www.googleapis.com/books/v1/volumes?q=harry+potter+and+inauthor:rowling&printType=books&maxResults=15"));
+    List<BookItem> books;
+    final res = await http.get(Uri.parse(_apiUrl));
     if (res.statusCode == 200) {
       final jsonRes = json.decode(res.body);
-
-      List<BookItem> books = (jsonRes["items"] as List)
-          .map((data) => data["volumeInfo"]["imageLinks"] != null
-              ? BookItem.fromJson(data)
-              : BookItem.imageLinkFromJson(data))
-          .toList();
+      if (jsonRes["totalItems"] > 0) {
+        books = (jsonRes["items"] as List)
+            .map((data) => data["volumeInfo"]["title"] == null
+                ? BookItem.noTitleFromJson(data)
+                : data["volumeInfo"]["authors"] != null &&
+                        data["volumeInfo"]["imageLinks"] != null
+                    ? BookItem.fromJson(data)
+                    : data["volumeInfo"]["authors"] == null &&
+                            data["volumeInfo"]["imageLinks"] == null
+                        ? BookItem.noAuthorImageFromJson(data)
+                        : data["volumeInfo"]["imageLinks"] == null
+                            ? BookItem.noImageFromJson(data)
+                            : BookItem.noAuthorFromJson(data))
+            .toList();
+      }
+      if (books != null) {
+        books.removeWhere((item) => item.title == "");
+      }
       return books;
     } else {
       throw Exception("Unexpected error occurred.");
@@ -76,7 +89,7 @@ class _MyAppState extends State<MyApp> {
       home: Scaffold(
           appBar: _buildBar(context),
           body: FutureBuilder<List<BookItem>>(
-            future: futureBook,
+            future: fetchBooks(),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 List<BookItem> books = snapshot.data;
@@ -86,7 +99,17 @@ class _MyAppState extends State<MyApp> {
               } else if (snapshot.hasError) {
                 return Text("${snapshot.error}");
               }
-              return const CircularProgressIndicator();
+              return Center(
+                  heightFactor: 3,
+                  child: _filter.text.isNotEmpty
+                      ? const Text(
+                          "No books found",
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      : const CircularProgressIndicator());
             },
           )),
     );
@@ -126,7 +149,6 @@ class _MyAppState extends State<MyApp> {
       } else {
         _searchIcon = const Icon(Icons.search);
         _appBarTitle = const Text("Reading list");
-        //_foundBooks = _allBooks;
         _filter.clear();
       }
     });
