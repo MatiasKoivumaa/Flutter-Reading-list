@@ -77,6 +77,13 @@ class _MyAppState extends State<MyApp> {
       if (books != null) {
         books.removeWhere((item) => item.title == "");
         books.removeWhere((item) => item.author == "");
+        for (int i=0; i<books.length; i++) {
+          for (int y=0; y<_favoritedBooks.length; y++) {
+            if (_favoritedBooks[y].id == books[i].id) {
+              books[i].favorite();
+            }
+          }
+        }
       }
       return books;
     } else {
