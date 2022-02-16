@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/login.dart';
 import 'package:http/http.dart' as http;
 
 import './book_model.dart';
@@ -9,7 +10,7 @@ import './books.dart';
 
 class BookPage extends StatefulWidget {
   final User user;
-  const BookPage(this.user, { Key key }) : super(key: key);
+  const BookPage(this.user, {Key key}) : super(key: key);
   @override
   _BookPageState createState() => _BookPageState();
 }
@@ -17,8 +18,33 @@ class BookPage extends StatefulWidget {
 class _BookPageState extends State<BookPage> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      
+    return Scaffold(
+      backgroundColor: Colors.deepPurple.shade50,
+      appBar: _buildBar(context),
+      body: FutureBuilder<List<BookItem>>(
+        future: fetchBooks(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            List<BookItem> books = snapshot.data;
+            return !_favorites
+                ? Books(books, _addToFavorites)
+                : Favorites(_favoritedBooks, _addToFavorites);
+          } else if (snapshot.hasError) {
+            return Text("${snapshot.error}");
+          }
+          return Center(
+              heightFactor: 3,
+              child: _filter.text.isNotEmpty
+                  ? const Text(
+                      "No books found",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                  : const CircularProgressIndicator());
+        },
+      ),
     );
   }
 
@@ -36,6 +62,10 @@ class _BookPageState extends State<BookPage> {
   );
   Icon _favoritesIcon = const Icon(
     Icons.favorite_outline,
+    size: 32,
+  );
+  final Icon _logOutIcon = const Icon(
+    Icons.logout_outlined,
     size: 32,
   );
   Widget _appBarTitle = const Text("Reading list");
@@ -62,7 +92,6 @@ class _BookPageState extends State<BookPage> {
     _currentUser = widget.user;
     super.initState();
   }
-    
 
   Future<List<BookItem>> fetchBooks() async {
     List<BookItem> books;
@@ -71,15 +100,17 @@ class _BookPageState extends State<BookPage> {
       final jsonRes = json.decode(res.body);
       if (jsonRes["totalItems"] > 0) {
         books = (jsonRes["items"] as List)
-          .map((data) => data["volumeInfo"]["title"] == null
-            ? BookItem.noTitleFromJson(data)
-            : data["volumeInfo"]["authors"] != null && data["volumeInfo"]["imageLinks"] != null
-              ? BookItem.fromJson(data)
-                : data["volumeInfo"]["authors"] == null && data["volumeInfo"]["imageLinks"] == null
-                  ? BookItem.noAuthorImageFromJson(data)
-                  : data["volumeInfo"]["imageLinks"] == null
-                    ? BookItem.noImageFromJson(data)
-                    : BookItem.noAuthorFromJson(data))
+            .map((data) => data["volumeInfo"]["title"] == null
+                ? BookItem.noTitleFromJson(data)
+                : data["volumeInfo"]["authors"] != null &&
+                        data["volumeInfo"]["imageLinks"] != null
+                    ? BookItem.fromJson(data)
+                    : data["volumeInfo"]["authors"] == null &&
+                            data["volumeInfo"]["imageLinks"] == null
+                        ? BookItem.noAuthorImageFromJson(data)
+                        : data["volumeInfo"]["imageLinks"] == null
+                            ? BookItem.noImageFromJson(data)
+                            : BookItem.noAuthorFromJson(data))
             .toList();
       }
       if (books != null) {
@@ -116,12 +147,32 @@ class _BookPageState extends State<BookPage> {
       ),
       actions: [
         Padding(
-          padding: const EdgeInsets.only(right: 20),
+          padding: const EdgeInsets.only(right: 10),
           child: IconButton(
             icon: _favoritesIcon,
             onPressed: _favoritesPressed,
           ),
-        )
+        ),
+        Padding(
+          padding: const EdgeInsets.only(right: 2),
+          child: IconButton(
+            icon: _logOutIcon,
+            onPressed: () async {
+              setState(() {
+                _isSigningOut = true;
+              });
+              await FirebaseAuth.instance.signOut();
+              setState(() {
+                _isSigningOut = false;
+              });
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => const Login(),
+                ),
+              );
+            },
+          ),
+        ),
       ],
     );
   }
