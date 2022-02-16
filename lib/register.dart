@@ -23,6 +23,7 @@ class _RegisterState extends State<Register> {
   final _focusPassword = FocusNode();
 
   bool _isProcessing = false;
+  bool _passwordVisible = false;
 
   @override
   Widget build(BuildContext context) {
@@ -61,77 +62,122 @@ class _RegisterState extends State<Register> {
             ),
             Form(
               key: _registerFormKey,
-              child: Column(
-                children: [
-                  TextFormField(
-                    controller: _emailTextController,
-                    focusNode: _focusEmail,
-                    validator: (value) => Validator.validateEmail(email: value),
-                    decoration: const InputDecoration(
-                      hintText: "Email",
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(30, 15, 30, 0),
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _emailTextController,
+                      keyboardType: TextInputType.emailAddress,
+                      focusNode: _focusEmail,
+                      validator: (value) =>
+                          Validator.validateEmail(email: value),
+                      cursorColor: Colors.deepPurple.shade400,
+                      decoration: InputDecoration(
+                        hintText: "Email",
+                        enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Colors.deepPurple.shade400,
+                          ),
+                        ),
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Colors.deepPurple.shade400,
+                            width: 2.0,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8.0),
-                  TextFormField(
-                    controller: _passwordTextController,
-                    focusNode: _focusPassword,
-                    validator: (value) =>
-                        Validator.validatePassword(password: value),
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      hintText: "Password",
+                    const SizedBox(height: 8.0),
+                    TextFormField(
+                      controller: _passwordTextController,
+                      focusNode: _focusPassword,
+                      validator: (value) =>
+                          Validator.validatePassword(password: value),
+                      obscureText: !_passwordVisible,
+                      cursorColor: Colors.deepPurple.shade400,
+                      decoration: InputDecoration(
+                        hintText: "Password",
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _passwordVisible
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                            color: Colors.deepPurple.shade400,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _passwordVisible = !_passwordVisible;
+                            });
+                          },
+                        ),
+                        enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Colors.deepPurple.shade400,
+                          ),
+                        ),
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Colors.deepPurple.shade400,
+                            width: 2.0,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 24.0),
-                  _isProcessing
-                      ? const CircularProgressIndicator()
-                      : Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: () async {
-                                  setState(() {
-                                    _isProcessing = true;
-                                  });
-                                  if (_registerFormKey.currentState
-                                      .validate()) {
-                                    User user = await Authentication
-                                        .registerUsingEmailPassword(
-                                      email: _emailTextController.text,
-                                      password: _passwordTextController.text,
-                                    );
+                    const SizedBox(height: 24.0),
+                    _isProcessing
+                        ? const CircularProgressIndicator()
+                        : Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: () async {
                                     setState(() {
-                                      _isProcessing = false;
+                                      _isProcessing = true;
                                     });
-                                    if (user != null) {
-                                      Navigator.of(context).pushAndRemoveUntil(
-                                        MaterialPageRoute(
-                                          builder: (context) => BookPage(user),
-                                        ),
-                                        ModalRoute.withName('/'),
+                                    if (_registerFormKey.currentState
+                                        .validate()) {
+                                      User user = await Authentication
+                                          .registerUsingEmailPassword(
+                                        email: _emailTextController.text,
+                                        password: _passwordTextController.text,
                                       );
+                                      setState(() {
+                                        _isProcessing = false;
+                                      });
+                                      if (user != null) {
+                                        Navigator.of(context)
+                                            .pushAndRemoveUntil(
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                BookPage(user),
+                                          ),
+                                          ModalRoute.withName('/'),
+                                        );
+                                      }
                                     }
-                                  }
-                                },
-                                child: const Text(
-                                  "Register",
-                                  style: TextStyle(
-                                    fontSize: 17,
-                                    color: Colors.black,
+                                  },
+                                  child: const Text(
+                                    "Register",
+                                    style: TextStyle(
+                                      fontSize: 17,
+                                      color: Colors.black,
+                                    ),
                                   ),
-                                ),
-                                style: OutlinedButton.styleFrom(
-                                  fixedSize: const Size(144, 40),
-                                  side: BorderSide(
-                                    color: Colors.deepPurple.shade400,
-                                    width: 3.0,
+                                  style: OutlinedButton.styleFrom(
+                                    backgroundColor: Colors.deepPurple.shade100,
+                                    fixedSize: const Size.fromHeight(40),
+                                    side: BorderSide(
+                                      color: Colors.deepPurple.shade400,
+                                      width: 3.0,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                ],
+                            ],
+                          ),
+                  ],
+                ),
               ),
             ),
           ],

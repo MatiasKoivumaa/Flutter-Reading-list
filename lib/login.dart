@@ -24,6 +24,8 @@ class _LoginState extends State<Login> {
   final _focusEmail = FocusNode();
   final _focusPassword = FocusNode();
 
+  bool _passwordVisible = false;
+
   Future<FirebaseApp> _initializeFireBase() async {
     FirebaseApp firebaseApp = await Firebase.initializeApp();
     return firebaseApp;
@@ -70,92 +72,136 @@ class _LoginState extends State<Login> {
                   ),
                   Form(
                     key: _formKey,
-                    child: Column(
-                      children: [
-                        TextFormField(
-                          controller: _emailTextController,
-                          focusNode: _focusEmail,
-                          validator: (value) =>
-                              Validator.validateEmail(email: value),
-                          decoration: const InputDecoration(
-                            hintText: "Email",
-                          ),
-                        ),
-                        const SizedBox(height: 8.0),
-                        TextFormField(
-                          controller: _passwordTextController,
-                          focusNode: _focusPassword,
-                          validator: (value) =>
-                              Validator.validatePassword(password: value),
-                          obscureText: true,
-                          decoration: const InputDecoration(
-                            hintText: "Password",
-                          ),
-                        ),
-                        const SizedBox(height: 24.0),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: () async {
-                                  if (_formKey.currentState.validate()) {
-                                    User user = await Authentication
-                                        .signInUsingEmailPassword(
-                                      email: _emailTextController.text,
-                                      password: _passwordTextController.text,
-                                    );
-                                    if (user != null) {
-                                      Navigator.of(context).pushReplacement(
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  BookPage(user)));
-                                    }
-                                  }
-                                },
-                                child: const Text(
-                                  "Sign in",
-                                  style: TextStyle(
-                                    fontSize: 17,
-                                    color: Colors.black,
-                                  ),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(30, 15, 30, 0),
+                      child: Column(
+                        children: [
+                          TextFormField(
+                            controller: _emailTextController,
+                            keyboardType: TextInputType.emailAddress,
+                            focusNode: _focusEmail,
+                            validator: (value) =>
+                                Validator.validateEmail(email: value),
+                            cursorColor: Colors.deepPurple.shade400,
+                            decoration: InputDecoration(
+                              hintText: "Email",
+                              enabledBorder: UnderlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Colors.deepPurple.shade400,
                                 ),
-                                style: OutlinedButton.styleFrom(
-                                  fixedSize: const Size(144, 40),
-                                  side: BorderSide(
-                                    color: Colors.deepPurple.shade400,
-                                    width: 3.0,
-                                  ),
+                              ),
+                              focusedBorder: UnderlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Colors.deepPurple.shade400,
+                                  width: 2.0,
                                 ),
                               ),
                             ),
-                            Expanded(
-                              child: OutlinedButton(
+                          ),
+                          const SizedBox(height: 8.0),
+                          TextFormField(
+                            controller: _passwordTextController,
+                            focusNode: _focusPassword,
+                            validator: (value) =>
+                                Validator.validatePassword(password: value),
+                            obscureText: !_passwordVisible,
+                            cursorColor: Colors.deepPurple.shade400,
+                            decoration: InputDecoration(
+                              hintText: "Password",
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _passwordVisible
+                                      ? Icons.visibility
+                                      : Icons.visibility_off,
+                                  color: Colors.deepPurple.shade400,
+                                ),
                                 onPressed: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                        builder: (context) => const Register()),
-                                  );
+                                  setState(() {
+                                    _passwordVisible = !_passwordVisible;
+                                  });
                                 },
-                                child: const Text(
-                                  "Register",
-                                  style: TextStyle(
-                                    fontSize: 17,
-                                    color: Colors.black,
-                                  ),
+                              ),
+                              enabledBorder: UnderlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Colors.deepPurple.shade400,
                                 ),
-                                style: OutlinedButton.styleFrom(
-                                  fixedSize: const Size(144, 40),
-                                  side: BorderSide(
-                                    color: Colors.deepPurple.shade400,
-                                    width: 3.0,
-                                  ),
+                              ),
+                              focusedBorder: UnderlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Colors.deepPurple.shade400,
+                                  width: 2.0,
                                 ),
                               ),
                             ),
-                          ],
-                        ),
-                      ],
+                          ),
+                          const SizedBox(height: 24.0),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: () async {
+                                    if (_formKey.currentState.validate()) {
+                                      User user = await Authentication
+                                          .signInUsingEmailPassword(
+                                        email: _emailTextController.text,
+                                        password: _passwordTextController.text,
+                                      );
+                                      if (user != null) {
+                                        Navigator.of(context).pushReplacement(
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    BookPage(user)));
+                                      }
+                                    }
+                                  },
+                                  child: const Text(
+                                    "Sign in",
+                                    style: TextStyle(
+                                      fontSize: 17,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    fixedSize: const Size.fromHeight(40),
+                                    backgroundColor: Colors.deepPurple.shade100,
+                                    side: BorderSide(
+                                      color: Colors.deepPurple.shade400,
+                                      width: 3.0,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 20),
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              const Register()),
+                                    );
+                                  },
+                                  child: const Text(
+                                    "Register",
+                                    style: TextStyle(
+                                      fontSize: 17,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    fixedSize: const Size.fromHeight(40),
+                                    backgroundColor: Colors.deepPurple.shade100,
+                                    side: BorderSide(
+                                      color: Colors.deepPurple.shade400,
+                                      width: 3.0,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
