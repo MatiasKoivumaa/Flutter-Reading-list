@@ -1,30 +1,32 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+
 import 'package:flutter_app/book_model.dart';
+import './dataBase.dart';
 
 class Favorites extends StatelessWidget {
-  final List<BookItem> favoriteBooks;
-  final Function changeIcon;
 
-  const Favorites(this.favoriteBooks, this.changeIcon, {Key key})
+  const Favorites({Key key})
       : super(key: key);
-
-  void checkPressed(BookItem book) {
-    if (book.addedToList) {
-      book.addedToList = false;
-    } else {
-      book.addedToList = true;
-    }
-    changeIcon(book);
-  }
 
   @override
   Widget build(BuildContext context) {
-    return favoriteBooks.isNotEmpty
-        ? ListView.builder(
-            itemCount: favoriteBooks.length,
+    return StreamBuilder<QuerySnapshot>(
+      stream: DataBase.readItems(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Text("Something went wrong");
+        } else if (snapshot.hasData || snapshot.data != null) {
+          return ListView.builder(
+            itemCount: snapshot.data.docs.length,
             itemExtent: 150,
             padding: const EdgeInsets.all(7),
             itemBuilder: (BuildContext context, index) {
+              var bookInfo = snapshot.data.docs[index].data();
+              String title = bookInfo["title"];
+              String author = bookInfo["author"];
+              String imageLinks = bookInfo["imageLink"];
+
               return Card(
                   elevation: 5,
                   child: Row(
@@ -36,7 +38,7 @@ class Favorites extends StatelessWidget {
                         minWidth: MediaQuery.of(context).size.width * 0.23,
                         maxWidth: MediaQuery.of(context).size.width * 0.23,
                       ),
-                      child: favoriteBooks[index].imageLink != ""
+                      child: snapshot.data.docs[index].data()["imageLink"] != ""
                           ? Image.network(
                               favoriteBooks[index].imageLink,
                               fit: BoxFit.fill,
@@ -85,16 +87,9 @@ class Favorites extends StatelessWidget {
                   )
                 ],
               ));
-            })
-        : const Center(
-            heightFactor: 3,
-            child: Text(
-              "Reading list is empty",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            },
           );
-  }
-}
+        }
+    },
+  );
+}}

@@ -1,12 +1,14 @@
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_app/login.dart';
 import 'package:http/http.dart' as http;
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import './book_model.dart';
 import './favorites.dart';
 import './books.dart';
+import 'package:flutter_app/login.dart';
+import './dataBase.dart';
 
 class BookPage extends StatefulWidget {
   final User user;
@@ -27,8 +29,8 @@ class _BookPageState extends State<BookPage> {
           if (snapshot.hasData) {
             List<BookItem> books = snapshot.data;
             return !_favorites
-                ? Books(books, _addToFavorites)
-                : Favorites(_favoritedBooks, _addToFavorites);
+                ? Books(books)
+                : Favorites();
           } else if (snapshot.hasError) {
             return Text("${snapshot.error}");
           }
@@ -48,12 +50,9 @@ class _BookPageState extends State<BookPage> {
     );
   }
 
-  bool _isSigningOut = false;
   User _currentUser;
-
   Future<List<BookItem>> futureBook;
   final _filter = TextEditingController();
-  final _favoritedBooks = <BookItem>[];
   String _apiUrl =
       'https://www.googleapis.com/books/v1/volumes?q=inauthor:stephen+king&printType=books&maxResults=15&langRestrict=en';
   Icon _searchIcon = const Icon(
@@ -71,7 +70,7 @@ class _BookPageState extends State<BookPage> {
   Widget _appBarTitle = const Text("Reading list");
   bool _favorites = false;
 
-  _MainPageState() {
+  _BookPageState() {
     _filter.addListener(() {
       if (_filter.text.isEmpty) {
         setState(() {
@@ -85,12 +84,6 @@ class _BookPageState extends State<BookPage> {
         });
       }
     });
-  }
-
-  @override
-  void initState() {
-    _currentUser = widget.user;
-    super.initState();
   }
 
   Future<List<BookItem>> fetchBooks() async {
@@ -116,13 +109,6 @@ class _BookPageState extends State<BookPage> {
       if (books != null) {
         books.removeWhere((item) => item.title == "");
         books.removeWhere((item) => item.author == "");
-        for (int i = 0; i < books.length; i++) {
-          for (int y = 0; y < _favoritedBooks.length; y++) {
-            if (_favoritedBooks[y].id == books[i].id) {
-              books[i].favorite();
-            }
-          }
-        }
       }
       return books;
     } else {
@@ -158,13 +144,7 @@ class _BookPageState extends State<BookPage> {
           child: IconButton(
             icon: _logOutIcon,
             onPressed: () async {
-              setState(() {
-                _isSigningOut = true;
-              });
               await FirebaseAuth.instance.signOut();
-              setState(() {
-                _isSigningOut = false;
-              });
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
                   builder: (context) => const Login(),
@@ -236,20 +216,6 @@ class _BookPageState extends State<BookPage> {
           Icons.favorite_outline,
           size: 32,
         );
-      });
-    }
-  }
-
-  void _addToFavorites(BookItem book) {
-    if (book.addedToList) {
-      setState(() {
-        book.favorite();
-        _favoritedBooks.add(book);
-      });
-    } else {
-      setState(() {
-        book.unFavorite();
-        _favoritedBooks.remove(book);
       });
     }
   }
