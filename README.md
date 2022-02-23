@@ -1,1 +1,5 @@
-# Reading list app made with flutter.
+# Reading list app.
+
+Framework: Flutter
+
+Database: Firebase Firestore
