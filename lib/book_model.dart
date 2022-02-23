@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class BookItem {
-  final String id;
   String title = "";
   String author = "";
   String imageLink = "";
@@ -12,15 +11,15 @@ class BookItem {
     size: 32,
   );
 
-  BookItem({this.id, this.title, this.author, this.imageLink});
-  BookItem.titleNull({this.id});
-  BookItem.imageNull({this.id, this.title, this.author});
-  BookItem.authorNull({this.id, this.title, this.imageLink});
-  BookItem.authorAndImageNull({this.id, this.title});
+  BookItem({this.title, this.author, this.imageLink});
+  BookItem.titleNull();
+  BookItem.imageNull({this.title, this.author});
+  BookItem.authorNull({this.title, this.imageLink});
+  BookItem.authorAndImageNull({this.title});
+
 
   factory BookItem.fromJson(Map<String, dynamic> json) {
     return BookItem(
-      id: json["id"],
       title: json["volumeInfo"]["title"],
       author: json["volumeInfo"]["authors"][0],
       imageLink: json["volumeInfo"]["imageLinks"]["thumbnail"],
@@ -28,26 +27,22 @@ class BookItem {
   }
   factory BookItem.noTitleFromJson(Map<String, dynamic> json) {
     return BookItem.titleNull(
-      id: json["id"],
     );
   }
   factory BookItem.noImageFromJson(Map<String, dynamic> json) {
     return BookItem.imageNull(
-      id: json["id"],
       title: json["volumeInfo"]["title"],
       author: json["volumeInfo"]["authors"][0],
     );
   }
   factory BookItem.noAuthorFromJson(Map<String, dynamic> json) {
     return BookItem.authorNull(
-      id: json["id"],
       title: json["volumeInfo"]["title"],
       imageLink: json["volumeInfo"]["imageLinks"]["thumbnail"],
     );
   }
   factory BookItem.noAuthorImageFromJson(Map<String, dynamic> json) {
     return BookItem.authorAndImageNull(
-      id: json["id"],
       title: json["volumeInfo"]["title"],
     );
   }
