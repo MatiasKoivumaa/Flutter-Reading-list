@@ -2,13 +2,11 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 import './book_model.dart';
 import './favorites.dart';
 import './books.dart';
 import 'package:flutter_app/login.dart';
-import './dataBase.dart';
 
 class BookPage extends StatefulWidget {
   final User user;
@@ -29,8 +27,8 @@ class _BookPageState extends State<BookPage> {
           if (snapshot.hasData) {
             List<BookItem> books = snapshot.data;
             return !_favorites
-                ? Books(books)
-                : Favorites();
+                ? Books(books, widget.user, _addToFavorites)
+                : Favorites(widget.user, _removeFromFavorites);
           } else if (snapshot.hasError) {
             return Text("${snapshot.error}");
           }
@@ -50,8 +48,8 @@ class _BookPageState extends State<BookPage> {
     );
   }
 
-  User _currentUser;
   Future<List<BookItem>> futureBook;
+  final _favoritedBooks = <BookItem>[];
   final _filter = TextEditingController();
   String _apiUrl =
       'https://www.googleapis.com/books/v1/volumes?q=inauthor:stephen+king&printType=books&maxResults=15&langRestrict=en';
@@ -109,6 +107,13 @@ class _BookPageState extends State<BookPage> {
       if (books != null) {
         books.removeWhere((item) => item.title == "");
         books.removeWhere((item) => item.author == "");
+        for (int i=0; i<books.length; i++) {
+          for (int y=0; y<_favoritedBooks.length; y++) {
+            if (_favoritedBooks[y].title == books[i].title) {
+              books.removeAt(i);
+            }
+          }
+        }
       }
       return books;
     } else {
@@ -218,5 +223,17 @@ class _BookPageState extends State<BookPage> {
         );
       });
     }
+  }
+
+  void _addToFavorites(BookItem book) {
+    setState(() {
+      _favoritedBooks.add(book);
+    });
+  }
+
+  void _removeFromFavorites(String title) {
+    setState(() {
+      _favoritedBooks.removeWhere((book) => book.title == title);
+    });
   }
 }

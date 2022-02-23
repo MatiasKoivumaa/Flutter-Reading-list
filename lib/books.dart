@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:flutter_app/book_model.dart';
 import './dataBase.dart';
 
 class Books extends StatelessWidget {
   final List<BookItem> books;
+  final User user;
+  final Function addToFavorites;
 
-  const Books(this.books, {Key key}) : super(key: key);
+  const Books(this.books, this.user, this.addToFavorites, {Key key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -69,11 +73,20 @@ class Books extends StatelessWidget {
                   SizedBox(
                     width: MediaQuery.of(context).size.width * 0.15,
                     child: IconButton(
-                      onPressed: () => DataBase.addItem(
-                        title: books[index].title,
-                        author: books[index].author,
-                        imageLink: books[index].imageLink,
-                      ),
+                      onPressed: () {
+                        books[index].icon = const Icon(
+                          Icons.favorite,
+                          color: Colors.red,
+                          size: 32,
+                        );
+                        DataBase.addItem(
+                          user: user,
+                          title: books[index].title,
+                          author: books[index].author,
+                          imageLink: books[index].imageLink,
+                        );
+                        addToFavorites(books[index]);
+                      },
                       icon: books[index].icon,
                     ),
                   )
